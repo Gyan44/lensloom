@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LensLoom</title>
+  <!-- Google Fonts for stylish typography -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet" />
+  <style>
+    /* Global Styles */
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #f6d365, #fda085);
+      transition: background 0.8s ease;
+      color: #333;
+      overflow-x: hidden;
+    }
+    /* Container for all main content (for background blur effect) */
+    #content {
+      transition: filter 0.3s ease;
+    }
+    /* Header Styles with Creative Title and Quote */
+    header {
+      text-align: center;
+      padding: 2rem 1rem;
+      background: rgba(255, 255, 255, 0.7);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    header h1 {
+      font-size: 3rem;
+      margin: 0;
+      font-weight: 700;
+      letter-spacing: 2px;
+    }
+    header p {
+      font-size: 1.2rem;
+      font-style: italic;
+      margin-top: 0.5rem;
+    }
+    /* Search Form Styles */
+    .search-container {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+    }
+    input[type="text"],
+    select {
+      padding: 0.5rem;
+      font-size: 1rem;
+      border: 2px solid #fff;
+      border-radius: 5px;
+      flex: 1;
+      min-width: 200px;
+    }
+    button {
+      padding: 0.5rem 1.5rem;
+      font-size: 1rem;
+      border: none;
+      background: #fff;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #f1f1f1;
+    }
+    /* Gallery Grid Styles */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      padding: 1rem;
+      max-width: 1200px;
+      margin: 0 auto 2rem;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+    }
+    .card img {
+      width: 100%;
+      display: block;
+    }
+    .card .info {
+      padding: 0.5rem;
+      text-align: center;
+      font-size: 0.9rem;
+      /* Allow tags to wrap if needed */
+      white-space: normal;
+    }
+    /* Updated Tag Span Styles */
+    .card .info span {
+      display: inline-block;       /* Allow proper wrapping and padding */
+      margin: 0 5px 5px 0;          /* Space between tags */
+      padding: 2px 4px;
+      cursor: pointer;
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+    .card .info span:hover {
+      transform: scale(1.1);        /* Slight pop-up effect on hover */
+      background-color: rgba(0, 0, 0, 0.1); /* Subtle background change */
+    }
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      font-size: 1.2rem;
+      color: #fff;
+    }
+    /* Modal (Lightbox) Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.8);
+    }
+    .modal-content {
+      margin: 5% auto;
+      display: block;
+      max-width: 90%;
+      border-radius: 10px;
+    }
+    .close {
+      position: absolute;
+      top: 20px;
+      right: 35px;
+      color: #f1f1f1;
+      font-size: 40px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close:hover,
+    .close:focus {
+      color: #bbb;
+      text-decoration: none;
+    }
+    /* Footer Styles */
+    footer {
+      text-align: center;
+      padding: 1rem;
+      font-size: 1rem;
+      background: rgba(255, 255, 255, 0.7);
+    }
+    /* Load More Button Container */
+    #load-more-container {
+      text-align: center;
+      margin: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="content">
+    <header>
+      <h1>ℒℯηsLσσm</h1>
+      <p>"Capturing light, weaving dreams."</p>
+    </header>
+
+    <div class="search-container">
+      <form id="search-form">
+        <input type="text" id="search-input" placeholder="Enter search term (e.g., yellow+flower)" required />
+        <select id="image-type">
+          <option value="all">All Types</option>
+          <option value="photo">Photo</option>
+          <option value="illustration">Illustration</option>
+          <option value="vector">Vector</option>
+        </select>
+        <select id="orientation">
+          <option value="all">All Orientations</option>
+          <option value="horizontal">Horizontal</option>
+          <option value="vertical">Vertical</option>
+        </select>
+        <button type="submit">Search</button>
+      </form>
+    </div>
+
+    <div id="loading" class="loading" style="display: none;">Loading images...</div>
+    <div id="gallery" class="gallery"></div>
+    <div id="load-more-container">
+      <button id="load-more" style="display: none;">Load More</button>
+    </div>
+  </div>
+
+  <!-- Modal for Enlarged Image -->
+  <div id="image-modal" class="modal">
+    <span class="close" id="modal-close">&times;</span>
+    <img class="modal-content" id="modal-img">
+    <div id="caption" style="text-align:center; color:#fff; margin-top: 10px;"></div>
+  </div>
+
+  <footer>
+    Made By Gyan🍀
+  </footer>
+
+  <!-- Color Thief library for extracting dominant colors -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.2/color-thief.umd.js"></script>
+  <script>
+    // Global state for pagination and current search
+    let currentQuery = '';
+    let currentImageType = '';
+    let currentOrientation = '';
+    let currentPage = 1;
+    const perPage = 20;
+    let totalHits = 0;
+
+    // Function to update background based on the dominant color of an image
+    function updateBackground(imageUrl) {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+      img.src = imageUrl;
+      img.onload = function() {
+        try {
+          const colorThief = new ColorThief();
+          const dominantColor = colorThief.getColor(img);
+          const complementaryColor = dominantColor.map(c => Math.max(c - 50, 0));
+          document.body.style.background = `linear-gradient(135deg, rgb(${dominantColor.join(',')}), rgb(${complementaryColor.join(',')}))`;
+        } catch (e) {
+          console.error("Error extracting color:", e);
+        }
+      };
+      img.onerror = function() {
+        console.error("Error loading image for color extraction.");
+      };
+    }
+
+    // Modal Elements
+    const modal = document.getElementById('image-modal');
+    const modalImg = document.getElementById('modal-img');
+    const captionText = document.getElementById('caption');
+    const modalClose = document.getElementById('modal-close');
+
+    // Close modal when 'X' is clicked
+    modalClose.onclick = function() {
+      modal.style.display = "none";
+      document.getElementById('content').style.filter = "none";
+    };
+
+    // Close modal when clicking outside of the image
+    modal.onclick = function(e) {
+      if (e.target === modal) {
+        modal.style.display = "none";
+        document.getElementById('content').style.filter = "none";
+      }
+    };
+
+    // Function to create an image card element
+    function createCard(image) {
+      const card = document.createElement('div');
+      card.className = 'card';
+
+      const img = document.createElement('img');
+      img.src = image.webformatURL;
+      img.alt = image.tags;
+      card.appendChild(img);
+
+      const info = document.createElement('div');
+      info.className = 'info';
+      // Split tags by comma and create clickable spans for each tag
+      const tags = image.tags.split(',');
+      tags.forEach(tagText => {
+        const tag = tagText.trim();
+        if(tag) {
+          const tagSpan = document.createElement('span');
+          tagSpan.textContent = tag;
+          tagSpan.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent card click event
+            document.getElementById('search-input').value = tag;
+            // Update search parameters for new query
+            currentQuery = tag;
+            // Reset to page 1
+            currentPage = 1;
+            fetchImages(true);
+          });
+          info.appendChild(tagSpan);
+        }
+      });
+      card.appendChild(info);
+
+      // Add click event to open modal (when image area is clicked)
+      card.addEventListener('click', () => {
+        modal.style.display = "block";
+        modalImg.src = image.largeImageURL || image.webformatURL;
+        captionText.textContent = image.tags;
+        // Apply blur to the background content
+        document.getElementById('content').style.filter = "blur(5px)";
+      });
+
+      return card;
+    }
+
+    // Function to fetch images from Pixabay
+    function fetchImages(newSearch = false) {
+      const gallery = document.getElementById('gallery');
+      const loading = document.getElementById('loading');
+      const loadMoreBtn = document.getElementById('load-more');
+
+      if (newSearch) {
+        gallery.innerHTML = '';  // Clear gallery on a new search
+        loadMoreBtn.style.display = 'none';
+      }
+
+      loading.style.display = 'block';
+
+      const apiKey = '48596945-0157c6ee0aaf9cf749c976d77';
+      let url = `https://pixabay.com/api/?key=${apiKey}&q=${encodeURIComponent(currentQuery)}&image_type=${currentImageType}&orientation=${currentOrientation}&page=${currentPage}&per_page=${perPage}`;
+
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          loading.style.display = 'none';
+          if (data.hits && data.hits.length > 0) {
+            // On a new search, update the background with the first image's dominant color
+            if (newSearch) {
+              updateBackground(data.hits[0].webformatURL);
+              totalHits = data.totalHits;
+            }
+            // Create and append cards for each image
+            data.hits.forEach(image => {
+              const card = createCard(image);
+              gallery.appendChild(card);
+            });
+            // Determine if there are more images to load
+            if (currentPage * perPage < totalHits) {
+              loadMoreBtn.style.display = 'inline-block';
+            } else {
+              loadMoreBtn.style.display = 'none';
+            }
+          } else {
+            gallery.innerHTML = '<p style="text-align:center; width:100%;">No images found. Please try another search.</p>';
+            loadMoreBtn.style.display = 'none';
+          }
+        })
+        .catch(err => {
+          loading.style.display = 'none';
+          console.error('Error fetching images:', err);
+          gallery.innerHTML = '<p style="text-align:center; width:100%;">Error fetching images. Please try again later.</p>';
+          loadMoreBtn.style.display = 'none';
+        });
+    }
+
+    // Event listener for the search form submission
+    document.getElementById('search-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Update global search parameters from the form inputs
+      currentQuery = document.getElementById('search-input').value;
+      currentImageType = document.getElementById('image-type').value;
+      currentOrientation = document.getElementById('orientation').value;
+      currentPage = 1; // Reset pagination
+      
+      fetchImages(true);
+    });
+
+    // Event listener for the "Load More" button
+    document.getElementById('load-more').addEventListener('click', function() {
+      currentPage++;
+      fetchImages(false);
+    });
+  </script>
+</body>
+</html>
